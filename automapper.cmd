@@ -2,6 +2,7 @@
 #
 # automapper.cmd version 3.10.5
 # last changed: 31 July 2012
+# Added "treasure map" mode from Isharon
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
 # Added caravan support from Jailwatch
@@ -26,6 +27,9 @@
 # Add the following aliases for toggling dragging:
 # #alias {dragoff} {#var drag 0;#var drag.target}
 # #alias {dragon} {#var drag 1;#var drag.target $0}
+# Add the following aliases for toggling treasure map mode:
+# #alias {mapoff} {#var mapwalk 0}
+# #alias {mapon} {#var mapwalk 1}
 # Standard Account = 1, Premium Account = 2, LTB Premium = 3
 # will use a global to set it by character.  This helps when you have both premium and standard accounts.
 
@@ -33,6 +37,11 @@ action var current_path %0 when ^You go
 action put #var powerwalk 0 when eval ($powerwalk == 1 && $Power_Perceive.LearningRate=34)
 action var slow_on_ice 1 when ^You had better slow down! The ice is far too treacherous
 action var slow_on_ice 1 when ^At the speed you are traveling, you are going to slip and fall sooner or later
+
+	if $mapwalk = 1 then {
+		send get my tattered map
+		waitforre ^You get|^You are already holding
+	}
 
 var failcounter 0
 var typeahead 1
@@ -392,6 +401,12 @@ powerwalk:
 	waitforre ^Roundtime|^Something in the area is interfering
 	gosub clear
 	goto loop
+mapwalk:
+	pause
+	put study my tattered map
+	waitforre ^The map has a large 'X' marked in the middle of it
+	gosub clear
+	goto loop
 return.clear:
 	var depth 0
 	gosub clear
@@ -403,6 +418,9 @@ move.done:
 	if $powerwalk = 1 then {
 		goto powerwalk
 	}
+	if $mapwalk = 1 then {
+		goto mapwalk
+	}
 	gosub clear
 	goto loop
 return:
@@ -411,6 +429,9 @@ return:
 	}
 	if $powerwalk = 1 then {
 		goto powerwalk
+	}
+	if $mapwalk = 1 then {
+		goto mapwalk
 	}
 	var movewait 0
 	return
