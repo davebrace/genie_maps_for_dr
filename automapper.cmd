@@ -1,7 +1,7 @@
 #debuglevel 10
 #
-# automapper.cmd version 3.10.4
-# last changed: 12 July 2012
+# automapper.cmd version 3.10.5
+# last changed: 31 July 2012
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
 # Added caravan support from Jailwatch
@@ -11,7 +11,7 @@
 # VTCifer - Added "room" type movement - used for loong command strings that need to be done in one room
 # VTCifer - Added "ice" type movement  - will collect rocks when needs to slow down
 # VTCifer - Added more matches for muck (black apes)
-
+# Fixed timings
 #
 # Related macros
 # ---------------
@@ -83,7 +83,7 @@ actions:
 
 loop:
 	gosub wave
-	pause
+	pause 0.1
 	goto loop
 
 wave:
@@ -105,7 +105,7 @@ wave_do:
 	return
 
 done:
-	pause .5
+	pause 0.5
 	put #parse YOU HAVE ARRIVED
 	put #flash
 	exit
@@ -172,7 +172,7 @@ move.real:
 	goto return
 move.power:
 	put %movement
-	pause
+	pause 0.2
 	put perc
 	waitforre ^Roundtime|^Something in the area is interfering
 	goto move.done
@@ -236,7 +236,7 @@ move.climb.with.rope:
 		put get my heavy rope
 		put uncoil my heavy rope
 		wait
-		pause
+		pause .5
 		action (mapper) on
 	}
 	if !contains("$righthand $lefthand", "heavy rope") then goto move.climb.with.app.and.rope
@@ -258,22 +258,22 @@ stow.rope:
 		put coil my heavy rope
 		put stow my heavy rope
 		wait
-		pause
+		pause 0.5
 	}
 	goto move.done
 move.search:
 	put search
 	wait
-	pause
+	pause 0.5
 	put %movement
-	pause
+	pause 0.2
 	goto move.done
 move.objsearch:
 	put search %searchObj
 	wait
-	pause
+	pause 0.5
 	put %movement
-	pause
+	pause 0.2
 	goto move.done
 move.script:
 	if %depth > 1 then waiteval 1 = %depth
@@ -294,7 +294,7 @@ move.pause:
 	goto move.done
 move.stairs:
 move.wait:
-	pause
+	pause 0.2
 	if %movewait = 1 then 
 	{
 		waitforre ^You reach|you reach
@@ -338,7 +338,7 @@ move.retry:
 	echo
 	echo *** Retry movement
 	echo
-	pause
+	pause 0.5
 	goto return.clear
 move.closed:
 	echo
@@ -359,7 +359,7 @@ move.failed:
 	echo
 	echo ********************************
 	echo MOVE FAILED - Type: %type | Movement: %movement | Depth: %depth
-	echo Remaining Path: %0 
+	echo Remaining Path: %0
 	var remaining_path %0
 	eval remaining_path replace ("%0", " ", "|")
 	echo %remaining_path(1)
@@ -382,14 +382,12 @@ echo [Moving: %movement]
 end_retry:
 	pause
 	goto return.clear
-	pause
-	goto return.clear
 caravan:
 	waitforre following you\.$
 	gosub clear
 	goto loop
 powerwalk:
-	pause
+	pause 0.2
 	put perc
 	waitforre ^Roundtime|^Something in the area is interfering
 	gosub clear
@@ -416,5 +414,3 @@ return:
 	}
 	var movewait 0
 	return
-	
-	gosub move roomid
