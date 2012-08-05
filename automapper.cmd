@@ -1,6 +1,8 @@
 #debuglevel 10
 #
 # automapper.cmd version 3.10.5
+# last changed: 5 August 2012
+# Replaced "tattered map" with "map" (because the adjective varies)
 # last changed: 31 July 2012
 # Added "treasure map" mode from Isharon
 # Added handler for attempting to enter closed shops from Shroomism
@@ -39,7 +41,7 @@ action var slow_on_ice 1 when ^You had better slow down! The ice is far too trea
 action var slow_on_ice 1 when ^At the speed you are traveling, you are going to slip and fall sooner or later
 
 	if $mapwalk = 1 then {
-		send get my tattered map
+		send get my map
 		waitforre ^You get|^You are already holding
 	}
 
@@ -403,7 +405,7 @@ powerwalk:
 	goto loop
 mapwalk:
 	pause
-	put study my tattered map
+	put study my map
 	waitforre ^The map has a large 'X' marked in the middle of it
 	gosub clear
 	goto loop
