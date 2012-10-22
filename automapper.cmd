@@ -1,10 +1,7 @@
 #debuglevel 10
 #
-# automapper.cmd version 3.10.5
-# last changed: 5 August 2012
-# Replaced "tattered map" with "map" (because the adjective varies)
-# last changed: 31 July 2012
-# Added "treasure map" mode from Isharon
+# automapper.cmd version 3.10.6
+# last changed: 8 October 2012
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
 # Added caravan support from Jailwatch
@@ -15,6 +12,10 @@
 # VTCifer - Added "ice" type movement  - will collect rocks when needs to slow down
 # VTCifer - Added more matches for muck (black apes)
 # Fixed timings
+# Added "treasure map" mode from Isharon
+# Replaced "tattered map" with "map" (because the adjective varies)
+# VTCifer - Added additional catches for roots
+
 #
 # Related macros
 # ---------------
@@ -22,7 +23,7 @@
 # #macro {P, Control} {#if {$powerwalk = 1}{#var powerwalk 0;#echo *** Powerwalking off}{#var powerwalk 1;#echo *** Powerwalking on}}
 #
 # Add the following macro for toggling Caravans:
-# #macro {c, Control} {#if {$caravan = 1}{#var caravan 0;#echo *** Caravan Following off}{#var caravan 1;#echo *** Caravan Following on}}
+# #macro {C, Control} {#if {$caravan = 1}{#var caravan 0;#echo *** Caravan Following off}{#var caravan 1;#echo *** Caravan Following on}}
 #
 # Related aliases
 # ---------------
@@ -61,7 +62,7 @@ var move_RETREAT ^You are engaged to|^You try to move, but you're engaged|^While
 var move_WEB ^You can't do that while entangled in a web
 var move_WAIT ^You continue climbing|^You begin climbing|^You really should concentrate on your journey|^You step onto a massive stairway
 var move_END_DELAY ^You reach|you reach\.\.\.$ 
-var move_STAND ^You must be standing to do that|^You can't do that while (lying down|kneeling|sitting)|^Running heedlessly over the rough terrain, you trip over an exposed root and land face first in the dirt\.|^Stand up first\.
+var move_STAND ^You must be standing to do that|^You can't do that while (lying down|kneeling|sitting)|^Running heedlessly over the rough terrain, you trip over an exposed root and land face first in the dirt\.|^Stand up first\.|a particularly sturdy one finally brings you to your knees\.$|You try to roll through the fall but end up on your back\.$
 var move_NO_SNEAK ^You can't do that here|^In which direction are you trying to sneak|^Sneaking is an inherently stealthy|^You can't sneak that way|^You can't sneak in that direction
 var move_GO ^Please rephrase that command
 var move_MUCK ^You fall into the .+ with a loud \*SPLUT\*|^You slip in .+ and fall flat on your back\!|^The .+ holds you tightly, preventing you from making much headway\.|^You make no progress in the mud|^You struggle forward, managing a few steps before ultimately falling short of your goal\.
@@ -312,17 +313,25 @@ move.wait:
 	}
 	goto move.done
 move.stand:
+	pause .5
 	matchre move.stand %move_RETRY|^Roundtime
 	matchre return.clear ^You stand back up
+	matchre return.clear ^You You are already standing
 		put stand
 	matchwait
 move.retreat:
 	action (mapper) off
+	match move.stand.then.retreat You must stand first.
 	matchre move.retreat %move_RETRY|^Roundtime
 	matchre move.retreat.done ^You retreat from combat
 	matchre move.retreat.done ^You are already as far away as you can get
 		put retreat
 		put retreat
+	matchwait
+move.stand.then.retreat:
+	matchre move.stand.then.retreat %move_RETRY|^Roundtime
+	matchre move.retreat ^You stand back up
+		put stand
 	matchwait
 move.retreat.done:
 	action (mapper) on
