@@ -1,7 +1,8 @@
 #debuglevel 10
-#
-# automapper.cmd version 3.10.6
-# last changed: 8 October 2012
+
+# automapper.cmd version 3.10.7
+# last changed: 18 December 2012
+
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
 # Added caravan support from Jailwatch
@@ -15,6 +16,7 @@
 # Added "treasure map" mode from Isharon
 # Replaced "tattered map" with "map" (because the adjective varies)
 # VTCifer - Added additional catches for roots
+# VTCifer - Added additional catch for Reaver mine -> Non-standard stand up message.  Fixed minor issue with RT and roots.
 
 #
 # Related macros
