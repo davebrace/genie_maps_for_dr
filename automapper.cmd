@@ -1,7 +1,7 @@
 #debuglevel 10
 
-# automapper.cmd version 3.10.7
-# last changed: 18 December 2012
+# automapper.cmd version 3.10.8
+# last changed: 27 March 2012
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -17,6 +17,7 @@
 # Replaced "tattered map" with "map" (because the adjective varies)
 # VTCifer - Added additional catches for roots
 # VTCifer - Added additional catch for Reaver mine -> Non-standard stand up message.  Fixed minor issue with RT and roots.
+# VTCifer - Added fix for climbs and typeaheads (Pucktin)
 
 #
 # Related macros
@@ -238,6 +239,7 @@ move.slow:
 	pause 3
 	goto move.real
 move.climb:
+	if %depth > 1 then waiteval 1 = %depth
 	matchre move.done %move_OK
 	matchre move.climb.with.rope %climb_FAIL
 	put %movement
@@ -317,7 +319,7 @@ move.wait:
 move.stand:
 	action (mapper) off
 	pause .5
-	matchre move.stand %move_RETRY|^Roundtime
+	matchre move.stand %move_RETRY|^\[?Roundtime
 	matchre return.clear ^You stand back up
 	matchre return.clear ^You You are already standing
 		put stand
