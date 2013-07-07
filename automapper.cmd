@@ -1,7 +1,7 @@
 #debuglevel 10
 
-# automapper.cmd version 3.10.8
-# last changed: 27 March 2012
+# automapper.cmd version 3.10.9
+# last changed: 7 July 2013
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -18,6 +18,7 @@
 # VTCifer - Added additional catches for roots
 # VTCifer - Added additional catch for Reaver mine -> Non-standard stand up message.  Fixed minor issue with RT and roots.
 # VTCifer - Added fix for climbs and typeaheads (Pucktin)
+# VTCifer - enhanced power walk mode - now turns on/off based on attunemnet learning
 
 #
 # Related macros
@@ -40,7 +41,6 @@
 # will use a global to set it by character.  This helps when you have both premium and standard accounts.
 
 action var current_path %0 when ^You go
-action put #var powerwalk 0 when eval ($powerwalk == 1 && $Power_Perceive.LearningRate=34)
 action var slow_on_ice 1 when ^You had better slow down! The ice is far too treacherous
 action var slow_on_ice 1 when ^At the speed you are traveling, you are going to slip and fall sooner or later
 
@@ -408,7 +408,7 @@ end_retry:
 	pause
 	goto return.clear
 caravan:
-	waitforre following you\.$
+	waitforre ^Your.*following you\.$
 	gosub clear
 	goto loop
 powerwalk:
@@ -433,7 +433,8 @@ move.done:
 		goto caravan
 	}
 	if $powerwalk = 1 then {
-		goto powerwalk
+		if !def(Attunement.LearningRate) then goto powerwalk
+		if $Attunement.LearningRate < 34 then goto powerwalk
 	}
 	if $mapwalk = 1 then {
 		goto mapwalk
@@ -445,7 +446,8 @@ return:
 		goto caravan
 	}
 	if $powerwalk = 1 then {
-		goto powerwalk
+		if !def(Attunement.LearningRate) then goto powerwalk
+		if $Attunement.LearningRate < 34 then goto powerwalk
 	}
 	if $mapwalk = 1 then {
 		goto mapwalk
