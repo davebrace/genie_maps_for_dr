@@ -1,7 +1,10 @@
-#debuglevel 10
+put #class rp on
+put #class racial on
+put #class combat off
+put #class arrive off
 
-# automapper.cmd version 3.10.9
-# last changed: 7 July 2013
+# automapper.cmd version 3.11
+# last changed: 19 December 2013
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -17,8 +20,6 @@
 # Replaced "tattered map" with "map" (because the adjective varies)
 # VTCifer - Added additional catches for roots
 # VTCifer - Added additional catch for Reaver mine -> Non-standard stand up message.  Fixed minor issue with RT and roots.
-# VTCifer - Added fix for climbs and typeaheads (Pucktin)
-# VTCifer - enhanced power walk mode - now turns on/off based on attunemnet learning
 
 #
 # Related macros
@@ -41,6 +42,7 @@
 # will use a global to set it by character.  This helps when you have both premium and standard accounts.
 
 action var current_path %0 when ^You go
+action put #var powerwalk 0 when eval ($powerwalk == 1 && $Attunement.LearningRate=34)
 action var slow_on_ice 1 when ^You had better slow down! The ice is far too treacherous
 action var slow_on_ice 1 when ^At the speed you are traveling, you are going to slip and fall sooner or later
 
@@ -52,7 +54,7 @@ action var slow_on_ice 1 when ^At the speed you are traveling, you are going to 
 var failcounter 0
 var typeahead 1
 if def(automapper.typeahead) then var typeahead $automapper.typeahead
-	
+
 var depth 0
 var movewait 0
 var closed 0
@@ -64,7 +66,7 @@ var move_RETRY ^\.\.\.wait|^Sorry, you may only|^Sorry, system is slow
 var move_RETREAT ^You are engaged to|^You try to move, but you're engaged|^While in combat|^You can't do that while engaged
 var move_WEB ^You can't do that while entangled in a web
 var move_WAIT ^You continue climbing|^You begin climbing|^You really should concentrate on your journey|^You step onto a massive stairway
-var move_END_DELAY ^You reach|you reach\.\.\.$ 
+var move_END_DELAY ^You reach|you reach\.\.\.$
 var move_STAND ^You must be standing to do that|^You can't do that while (lying down|kneeling|sitting)|^Running heedlessly over the rough terrain, you trip over an exposed root and land face first in the dirt\.|^Stand up first\.|^You must stand first\.|a particularly sturdy one finally brings you to your knees\.$|You try to roll through the fall but end up on your back\.$
 var move_NO_SNEAK ^You can't do that here|^In which direction are you trying to sneak|^Sneaking is an inherently stealthy|^You can't sneak that way|^You can't sneak in that direction
 var move_GO ^Please rephrase that command
@@ -123,6 +125,7 @@ done:
 	pause 0.5
 	put #parse YOU HAVE ARRIVED
 	put #flash
+	put #class arrive on
 	exit
 
 move:
@@ -162,8 +165,8 @@ move:
 					var movement sneak %movement
 				}
 			}
-		} 
-		else 
+		}
+		else
 		{
 			if "%type" = "real" then
 			{
@@ -188,7 +191,7 @@ move.real:
 move.power:
 	put %movement
 	pause 0.2
-	put perc
+	send power
 	waitforre ^Roundtime|^Something in the area is interfering
 	goto move.done
 move.room:
@@ -202,7 +205,7 @@ move.ice:
 	put %movement
 	nextroom
 	goto move.done
-	
+
 ice.collect.p:
 	pause .5
 ice.collect:
@@ -233,13 +236,12 @@ move.muck:
 	put dig
 	matchwait
 move.muck.done:
-	action (mapper) on	
+	action (mapper) on
 	goto return.clear
 move.slow:
 	pause 3
 	goto move.real
 move.climb:
-	if %depth > 1 then waiteval 1 = %depth
 	matchre move.done %move_OK
 	matchre move.climb.with.rope %climb_FAIL
 	put %movement
@@ -311,7 +313,7 @@ move.pause:
 move.stairs:
 move.wait:
 	pause 0.2
-	if %movewait = 1 then 
+	if %movewait = 1 then
 	{
 		waitforre ^You reach|you reach
 	}
@@ -319,7 +321,7 @@ move.wait:
 move.stand:
 	action (mapper) off
 	pause .5
-	matchre move.stand %move_RETRY|^\[?Roundtime
+	matchre move.stand %move_RETRY|^Roundtime
 	matchre return.clear ^You stand back up
 	matchre return.clear ^You You are already standing
 		put stand
@@ -375,8 +377,8 @@ move.closed:
 	exit
 move.failed:
     evalmath failcounter %failcounter + 1
-	if %failcounter > 4 then 
-	{	
+	if %failcounter > 4 then
+	{
 		put #parse AUTOMAPPER MOVEMENT FAILED
 		put #flash
 		exit
@@ -392,12 +394,12 @@ move.failed:
 	echo RETRYING Movement...%failcounter / 5 Tries.
 	echo ********************************
 	echo
-	
+
     if %failcounter > 3 then {
     echo [Trying: %remaining_path(2) due to possible movement overload]
     put %remaining_path(2)
     }
-	
+
 	put #parse MOVE FAILED
 	if %type = "search" then put %type
 	pause
@@ -408,12 +410,18 @@ end_retry:
 	pause
 	goto return.clear
 caravan:
-	waitforre ^Your.*following you\.$
+	waitforre following you\.$
 	gosub clear
 	goto loop
 powerwalk:
 	pause 0.2
-	put perc
+	send power
+	waitforre ^Roundtime|^Something in the area is interfering
+	gosub clear
+	goto loop
+foragewalk:
+	pause 0.2
+	send forage $forage
 	waitforre ^Roundtime|^Something in the area is interfering
 	gosub clear
 	goto loop
@@ -433,8 +441,10 @@ move.done:
 		goto caravan
 	}
 	if $powerwalk = 1 then {
-		if !def(Attunement.LearningRate) then goto powerwalk
-		if $Attunement.LearningRate < 34 then goto powerwalk
+		goto powerwalk
+	}
+	if $foragewalk = 1 then {
+		goto foragewalk
 	}
 	if $mapwalk = 1 then {
 		goto mapwalk
@@ -446,8 +456,10 @@ return:
 		goto caravan
 	}
 	if $powerwalk = 1 then {
-		if !def(Attunement.LearningRate) then goto powerwalk
-		if $Attunement.LearningRate < 34 then goto powerwalk
+		goto powerwalk
+	}
+	if $foragewalk = 1 then {
+		goto foragewalk
 	}
 	if $mapwalk = 1 then {
 		goto mapwalk
