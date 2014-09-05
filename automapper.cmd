@@ -1,7 +1,8 @@
-put #class rp on
 put #class racial on
-put #class combat off
+put #class rp on
 put #class arrive off
+put #class combat off
+put #class joust off
 
 # automapper.cmd version 3.11
 # last changed: 19 December 2013
@@ -60,9 +61,9 @@ var movewait 0
 var closed 0
 var slow_on_ice 0
 
-var move_OK ^Obvious|^It's pitch dark
-var move_FAIL ^You can't go there|^What were you referring to|^I could not find what you were referring to\.|^You can't sneak in that direction
-var move_RETRY ^\.\.\.wait|^Sorry, you may only|^Sorry, system is slow
+var move_OK ^Obvious (paths|exits)|^It's pitch dark
+var move_FAIL ^You can't go there|^What were you referring to|^I could not find what you were referring to\.|^You can't sneak in that direction|^You can't ride your adderwood broom in that direction
+var move_RETRY ^\.\.\.wait|^Sorry, you may only|^Sorry, system is slow|^You can't ride your \w+ broom in that direction
 var move_RETREAT ^You are engaged to|^You try to move, but you're engaged|^While in combat|^You can't do that while engaged
 var move_WEB ^You can't do that while entangled in a web
 var move_WAIT ^You continue climbing|^You begin climbing|^You really should concentrate on your journey|^You step onto a massive stairway
@@ -190,7 +191,8 @@ move.real:
 	goto return
 move.power:
 	put %movement
-	pause 0.2
+	pause 0.5
+	pause 0.5
 	send power
 	waitforre ^Roundtime|^Something in the area is interfering
 	goto move.done
@@ -377,7 +379,7 @@ move.closed:
 	exit
 move.failed:
     evalmath failcounter %failcounter + 1
-	if %failcounter > 4 then
+	if %failcounter > 1 then
 	{
 		put #parse AUTOMAPPER MOVEMENT FAILED
 		put #flash
