@@ -4,8 +4,8 @@ put #class arrive off
 put #class combat off
 put #class joust off
 
-# automapper.cmd version 3.11
-# last changed: 19 December 2013
+# automapper.cmd version 4.0
+# last changed: April 16, 2015
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -62,8 +62,8 @@ var closed 0
 var slow_on_ice 0
 
 var move_OK ^Obvious (paths|exits)|^It's pitch dark
-var move_FAIL ^You can't go there|^What were you referring to|^I could not find what you were referring to\.|^You can't sneak in that direction|^You can't ride your adderwood broom in that direction
-var move_RETRY ^\.\.\.wait|^Sorry, you may only|^Sorry, system is slow|^You can't ride your \w+ broom in that direction
+var move_FAIL ^You can't go there|^What were you referring to|^I could not find what you were referring to\.|^You can't sneak in that direction|^You can't ride your.+(broom|carpet) in that direction|^You can't ride your.+(broom|carpet) in that direction|^You can't ride that way\.$
+var move_RETRY ^\.\.\.wait|^Sorry, you may only|^Sorry, system is slow|^You can't ride your.+(broom|carpet) in that direction|^You can't ride your.+(broom|carpet) in that direction
 var move_RETREAT ^You are engaged to|^You try to move, but you're engaged|^While in combat|^You can't do that while engaged
 var move_WEB ^You can't do that while entangled in a web
 var move_WAIT ^You continue climbing|^You begin climbing|^You really should concentrate on your journey|^You step onto a massive stairway
@@ -92,6 +92,7 @@ actions:
 	action (mapper) var closed 1;goto move.closed when %move_CLOSED
 	action (mapper) goto move.nosneak when %move_NO_SNEAK
 	action (mapper) goto move.go when %move_GO
+	action (mapper) goto move.dive when %move_DIVE
 	action (mapper) goto move.muck when %move_MUCK
 	action (mapper) echo Will re-attempt climb in 5 seconds...;send 5 $lastcommand when ^All this climbing back and forth is getting a bit tiresome\.  You need to rest a bit before you continue\.$
 	action (mapper) goto move.retry when %swim_FAIL
@@ -123,6 +124,7 @@ wave_do:
 	return
 
 done:
+pause .1
 	pause 0.5
 	put #parse YOU HAVE ARRIVED
 	put #flash
@@ -144,10 +146,10 @@ move:
 		{
 			var movement drag $drag.target %movement
 		}
-        if matchre("%movement", "^(swim|climb|web|muck|rt|wait|slow|drag|script|room) ") then
+        if matchre("%movement", "^(swim|climb|web|muck|rt|wait|slow|drag|script|room|dive) ") then
         {
 			var type $1
-            eval movement replacere("%movement", "^(swim|web|muck|rt|wait|slow|script|room) ", "")
+            eval movement replacere("%movement", "^(swim|web|muck|rt|wait|slow|script|room|dive) ", "")
         }
 	}
 	else
@@ -171,10 +173,10 @@ move:
 		{
 			if "%type" = "real" then
 			{
-				if matchre("%movement", "^(search|swim|climb|web|muck|rt|wait|slow|drag|script|room|ice) ") then
+				if matchre("%movement", "^(search|swim|climb|web|muck|rt|wait|slow|drag|script|room|ice|dive) ") then
 				{
 					var type $1
-					eval movement replacere("%movement", "^(search|swim|web|muck|rt|wait|slow|script|room|ice) ", "")
+					eval movement replacere("%movement", "^(search|swim|web|muck|rt|wait|slow|script|room|ice|dive) ", "")
 				}
 				if matchre("%movement", "^(objsearch) (\S+) (.+)") then
 				{
@@ -207,7 +209,6 @@ move.ice:
 	put %movement
 	nextroom
 	goto move.done
-
 ice.collect.p:
 	pause .5
 ice.collect:
@@ -246,6 +247,7 @@ move.slow:
 move.climb:
 	matchre move.done %move_OK
 	matchre move.climb.with.rope %climb_FAIL
+	if (matchre ("$roomobjs", "\b(broom|carpet)\b") then eval movement replacere("%movement", "climb ", "go ")
 	put %movement
 	matchwait
 move.climb.with.rope:
@@ -292,6 +294,7 @@ move.objsearch:
 	put search %searchObj
 	wait
 	pause 0.5
+	if (matchre ("$roomobjs", "\b(broom|carpet)\b") then eval movement replacere("%movement", "climb ", "go ")
 	put %movement
 	pause 0.2
 	goto move.done
@@ -345,6 +348,12 @@ move.stand.then.retreat:
 move.retreat.done:
 	action (mapper) on
 	goto return.clear
+move.dive:
+	if (matchre ("$roomobjs", "\b(broom|carpet)\b") then {
+	eval movement replacere("%movement", "dive ", "")
+	put go %movement
+	} else put dive %movement
+	goto move.done
 move.go:
 	put go %movement
 	goto move.done
