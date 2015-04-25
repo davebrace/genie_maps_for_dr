@@ -5,7 +5,7 @@ put #class combat off
 put #class joust off
 
 # automapper.cmd version 4.0
-# last changed: April 16, 2015
+# last changed: April 24, 2015
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -21,7 +21,7 @@ put #class joust off
 # Replaced "tattered map" with "map" (because the adjective varies)
 # VTCifer - Added additional catches for roots
 # VTCifer - Added additional catch for Reaver mine -> Non-standard stand up message.  Fixed minor issue with RT and roots.
-
+# Shroomism/Azoth - Added catches for stunned and missing catch for tripping over roots
 #
 # Related macros
 # ---------------
@@ -63,12 +63,12 @@ var slow_on_ice 0
 
 var move_OK ^Obvious (paths|exits)|^It's pitch dark
 var move_FAIL ^You can't go there|^What were you referring to|^I could not find what you were referring to\.|^You can't sneak in that direction|^You can't ride your.+(broom|carpet) in that direction|^You can't ride your.+(broom|carpet) in that direction|^You can't ride that way\.$
-var move_RETRY ^\.\.\.wait|^Sorry, you may only|^Sorry, system is slow|^You can't ride your.+(broom|carpet) in that direction|^You can't ride your.+(broom|carpet) in that direction
+var move_RETRY ^\.\.\.wait|^Sorry, you may only|^Sorry, system is slow|^You can't ride your.+(broom|carpet) in that direction|^You can't ride your.+(broom|carpet) in that direction|^The weight of all|lose your balance during the effort|^You are still stunned
 var move_RETREAT ^You are engaged to|^You try to move, but you're engaged|^While in combat|^You can't do that while engaged
 var move_WEB ^You can't do that while entangled in a web
 var move_WAIT ^You continue climbing|^You begin climbing|^You really should concentrate on your journey|^You step onto a massive stairway
 var move_END_DELAY ^You reach|you reach\.\.\.$
-var move_STAND ^You must be standing to do that|^You can't do that while (lying down|kneeling|sitting)|^Running heedlessly over the rough terrain, you trip over an exposed root and land face first in the dirt\.|^Stand up first\.|^You must stand first\.|a particularly sturdy one finally brings you to your knees\.$|You try to roll through the fall but end up on your back\.$
+var move_STAND ^You must be standing to do that|^You can't do that while (lying down|kneeling|sitting)|you trip over an exposed root|^Stand up first\.|^You must stand first\.|a particularly sturdy one finally brings you to your knees\.$|You try to roll through the fall but end up on your back\.$
 var move_NO_SNEAK ^You can't do that here|^In which direction are you trying to sneak|^Sneaking is an inherently stealthy|^You can't sneak that way|^You can't sneak in that direction
 var move_GO ^Please rephrase that command
 var move_MUCK ^You fall into the .+ with a loud \*SPLUT\*|^You slip in .+ and fall flat on your back\!|^The .+ holds you tightly, preventing you from making much headway\.|^You make no progress in the mud|^You struggle forward, managing a few steps before ultimately falling short of your goal\.
@@ -97,6 +97,7 @@ actions:
 	action (mapper) echo Will re-attempt climb in 5 seconds...;send 5 $lastcommand when ^All this climbing back and forth is getting a bit tiresome\.  You need to rest a bit before you continue\.$
 	action (mapper) goto move.retry when %swim_FAIL
 	action (mapper) goto move.drawbridge when %move_DRAWBRIDGE
+	action (mapper) goto move.knock when Try KNOCKing instead
 	action (mapper) goto move.rope.bridge when %move_ROPE.BRIDGE
 	return
 
@@ -222,6 +223,16 @@ ice.return:
 	action (mapper) on
 	return
 
+move.knock:
+matchre move.done %move_OK|All right, welcome back|opens the door just enough to let you slip through
+matchre turn.cloak I can't see your face at all
+matchre gate.wanted wanted criminal
+put knock gate
+matchwait
+turn.cloak:
+put turn my cloak
+pause .5
+goto move.knock
 move.drag:
 move.sneak:
 move.swim:
@@ -322,13 +333,13 @@ move.wait:
 	{
 		waitforre ^You reach|you reach
 	}
-	goto move.done
+	goto move.done	
 move.stand:
 	action (mapper) off
 	pause .5
-	matchre move.stand %move_RETRY|^Roundtime
+	matchre move.stand %move_RETRY|^Roundtime|^You are still
 	matchre return.clear ^You stand back up
-	matchre return.clear ^You You are already standing
+	matchre return.clear ^You are already standing
 		put stand
 	matchwait
 move.retreat:
@@ -377,6 +388,11 @@ move.retry:
 	echo *** Retry movement
 	echo
 	pause 0.5
+	if $stunned = 1 then 
+		{
+		pause
+		goto move.retry
+		}
 	goto return.clear
 move.closed:
 	echo
