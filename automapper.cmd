@@ -5,7 +5,7 @@ put #class combat off
 put #class joust off
 
 # automapper.cmd version 4.0
-# last changed: April 24, 2015
+# last changed: May 8, 2015
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -21,7 +21,7 @@ put #class joust off
 # Replaced "tattered map" with "map" (because the adjective varies)
 # VTCifer - Added additional catches for roots
 # VTCifer - Added additional catch for Reaver mine -> Non-standard stand up message.  Fixed minor issue with RT and roots.
-# Shroomism/Azoth - Added catches for stunned and missing catch for tripping over roots
+# Shroom - Added catches for stunned or tripping over roots / added catch for citizen only shops
 #
 # Related macros
 # ---------------
@@ -72,8 +72,8 @@ var move_STAND ^You must be standing to do that|^You can't do that while (lying 
 var move_NO_SNEAK ^You can't do that here|^In which direction are you trying to sneak|^Sneaking is an inherently stealthy|^You can't sneak that way|^You can't sneak in that direction
 var move_GO ^Please rephrase that command
 var move_MUCK ^You fall into the .+ with a loud \*SPLUT\*|^You slip in .+ and fall flat on your back\!|^The .+ holds you tightly, preventing you from making much headway\.|^You make no progress in the mud|^You struggle forward, managing a few steps before ultimately falling short of your goal\.
-var climb_FAIL ^Trying to judge the climb, you peer over the edge\.  A wave of dizziness hits you, and you back away from .+\.|^You start down .+, but you find it hard going\.  Rather than risking a fall, you make your way back up\.|^You attempt to climb down .+, but you can't seem to find purchase\.|^You pick your way up .+, but reach a point where your footing is questionable\.  Reluctantly, you climb back down\.|^You make your way up .+\.  Partway up, you make the mistake of looking down\.  Struck by vertigo, you cling to .+ for a few moments, then slowly climb back down\.|^You approach .+, but the steepness is intimidating\.|^You start up .+, but slip after a few feet and fall to the ground\!  You are unharmed but feel foolish\.
-var move_CLOSED ^The door is locked up tightly for the night|^You stop as you realize that the|shop is closed for the night
+var climb_FAIL ^Trying to judge the climb, you peer over the edge\.  A wave of dizziness hits you, and you back away from .+\.|^You start down .+, but you find it hard going\. Rather than risking a fall, you make your way back up\.|^You attempt to climb down .+, but you can't seem to find purchase\.|^You pick your way up .+, but reach a point where your footing is questionable\.  Reluctantly, you climb back down\.|^You make your way up .+\.  Partway up, you make the mistake of looking down\.  Struck by vertigo, you cling to .+ for a few moments, then slowly climb back down\.|^You approach .+, but the steepness is intimidating\.|^You start up .+, but slip after a few feet and fall to the ground\!  You are unharmed but feel foolish\.
+var move_CLOSED ^The door is locked up tightly for the night|^You stop as you realize that the|shop is closed for the night|I'm sorry, but you need to be a citizen
 var swim_FAIL ^You struggle|^You work|^You slap|^You flounder
 var move_DRAWBRIDGE ^The guard yells, "Lower the bridge|^The guard says, "You'll have to wait|^A guard yells, "Hey|^The guard yells, "Hey
 var move_ROPE.BRIDGE is already on the rope\.
