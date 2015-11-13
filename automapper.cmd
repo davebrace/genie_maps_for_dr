@@ -4,8 +4,8 @@ put #class arrive off
 put #class combat off
 put #class joust off
 
-# automapper.cmd version 4.0
-# last changed: May 8, 2015
+# automapper.cmd version 5.0
+# last changed: October 29, 2015
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -42,6 +42,8 @@ put #class joust off
 # Standard Account = 1, Premium Account = 2, LTB Premium = 3
 # will use a global to set it by character.  This helps when you have both premium and standard accounts.
 
+#debuglevel 10
+
 action var current_path %0 when ^You go
 action put #var powerwalk 0 when eval ($powerwalk == 1 && $Attunement.LearningRate=34)
 action var slow_on_ice 1 when ^You had better slow down! The ice is far too treacherous
@@ -77,6 +79,7 @@ var move_CLOSED ^The door is locked up tightly for the night|^You stop as you re
 var swim_FAIL ^You struggle|^You work|^You slap|^You flounder
 var move_DRAWBRIDGE ^The guard yells, "Lower the bridge|^The guard says, "You'll have to wait|^A guard yells, "Hey|^The guard yells, "Hey
 var move_ROPE.BRIDGE is already on the rope\.
+var climb_mount_FAIL climb what?
 
 gosub actions
 goto loop
@@ -99,6 +102,7 @@ actions:
 	action (mapper) goto move.drawbridge when %move_DRAWBRIDGE
 	action (mapper) goto move.knock when Try KNOCKing instead
 	action (mapper) goto move.rope.bridge when %move_ROPE.BRIDGE
+	action (mapper) goto move.climb.mount.fail when %climb_mount_FAIL
 	return
 
 loop:
@@ -129,7 +133,6 @@ pause .1
 	pause 0.5
 	put #parse YOU HAVE ARRIVED
 	put #flash
-	put #class arrive on
 	exit
 
 move:
@@ -230,7 +233,7 @@ matchre gate.wanted wanted criminal
 put knock gate
 matchwait
 turn.cloak:
-put turn my cloak
+#put turn my cloak
 pause .5
 goto move.knock
 move.drag:
@@ -257,7 +260,13 @@ move.slow:
 	goto move.real
 move.climb:
 	matchre move.done %move_OK
+	matchre move.climb.mount.fail climb what\?
 	matchre move.climb.with.rope %climb_FAIL
+	if (matchre ("$roomobjs", "\b(broom|carpet)\b") then eval movement replacere("%movement", "climb ", "go ")
+	put %movement
+	matchwait
+move.climb.mount.fail:
+	matchre move.done %move_OK
 	if (matchre ("$roomobjs", "\b(broom|carpet)\b") then eval movement replacere("%movement", "climb ", "go ")
 	put %movement
 	matchwait
@@ -333,7 +342,7 @@ move.wait:
 	{
 		waitforre ^You reach|you reach
 	}
-	goto move.done	
+	goto move.done
 move.stand:
 	action (mapper) off
 	pause .5
@@ -388,7 +397,7 @@ move.retry:
 	echo *** Retry movement
 	echo
 	pause 0.5
-	if $stunned = 1 then 
+	if $stunned = 1 then
 		{
 		pause
 		goto move.retry
