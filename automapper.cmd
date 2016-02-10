@@ -22,10 +22,10 @@ put #class joust off
 # VTCifer - Added additional catches for roots
 # VTCifer - Added additional catch for Reaver mine -> Non-standard stand up message.  Fixed minor issue with RT and roots.
 # Shroom - Added catches for stunned or tripping over roots / added catch for citizen only shops
-# Shroom - Added catches for Theren tunnels so script does not get stuck in infinite loop trying to stand
+# Shroom - Added matches for Theren tunnels so script does not get stuck in infinite loop trying to stand
 # Shroom - Added additional catch for closed shops in Aesry
 # Shroom - Added additional handlers for closed shops 
-# Shroom - Added catches for trying to go through town gate while invis
+# Shroom - Added catches for trying to go through town gate while invisible
 #
 # Related macros
 # ---------------
