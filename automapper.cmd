@@ -4,8 +4,8 @@ put #class arrive off
 put #class combat off
 put #class joust off
 
-# automapper.cmd version 5.1
-# last changed: Feb 9th, 2016
+# automapper.cmd version 5.2
+# last changed: Feb 11th, 2016
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -22,11 +22,15 @@ put #class joust off
 # VTCifer - Added additional catches for roots
 # VTCifer - Added additional catch for Reaver mine -> Non-standard stand up message.  Fixed minor issue with RT and roots.
 # Shroom - Added catches for stunned or tripping over roots / added catch for citizen only shops
+# Shroom - Added additional catches for closed shops in different cities
+# Shroom - Added support for knocking on a town gate (Shard) during Night to get in. (need to add checks for Non-Citizens, may cause problems with non-citizens)
+# Shroom - Added catches for trying to go through gate while invisible or with a cloak concealing face.
+# Shroom - Added support for climbing with different types of ropes 
 # Shroom - Added matches for Theren tunnels so script does not get stuck in infinite loop trying to stand
-# Shroom - Added additional catch for closed shops in Aesry
-# Shroom - Added additional handlers for closed shops 
-# Shroom - Added catches for trying to go through town gate while invisible
-#
+# Shroom - Added catch for Shard citizens now being able to enter closed shops at night
+# Shroom - Added catch for running out of stamina when climbing stairs (Aesry)
+# - Will cast guild-specific fatigue recovery buffs if possible and pause to wait for stamina before continuing
+
 # Related macros
 # ---------------
 # Add the following macro for toggling powerwalking:
@@ -78,11 +82,12 @@ var move_NO_SNEAK ^You can't do that here|^In which direction are you trying to 
 var move_GO ^Please rephrase that command
 var move_MUCK ^You fall into the .+ with a loud \*SPLUT\*|^You slip in .+ and fall flat on your back\!|^The .+ holds you tightly, preventing you from making much headway\.|^You make no progress in the mud|^You struggle forward, managing a few steps before ultimately falling short of your goal\.
 var climb_FAIL ^Trying to judge the climb, you peer over the edge\.  A wave of dizziness hits you, and you back away from .+\.|^You start down .+, but you find it hard going\.  Rather than risking a fall, you make your way back up\.|^You attempt to climb down .+, but you can't seem to find purchase\.|^You pick your way up .+, but reach a point where your footing is questionable\.  Reluctantly, you climb back down\.|^You make your way up .+\.  Partway up, you make the mistake of looking down\.  Struck by vertigo, you cling to .+ for a few moments, then slowly climb back down\.|^You approach .+, but the steepness is intimidating\.|^You start up .+, but slip after a few feet and fall to the ground\!  You are unharmed but feel foolish\.
-var move_CLOSED ^The door is locked up tightly for the night|^You stop as you realize that the|shop is closed for the night|I'm sorry, but you need to be a citizen|BONK! You smash your nose|must be closed for the night
+var move_CLOSED ^The door is locked up tightly for the night|^You stop as you realize that the|shop is closed for the night|I'm sorry, but you need to be a citizen|BONK\! You smash your nose|must be closed for the night
 var swim_FAIL ^You struggle|^You work|^You slap|^You flounder
 var move_DRAWBRIDGE ^The guard yells, "Lower the bridge|^The guard says, "You'll have to wait|^A guard yells, "Hey|^The guard yells, "Hey
 var move_ROPE.BRIDGE is already on the rope\.|You'll have to wait til
 var move_STOW ^You need to empty your hands
+var move_FATIGUE ^You're too tired to try climbing
 var climb_mount_FAIL climb what?
 gosub actions
 goto loop
@@ -106,6 +111,7 @@ actions:
 	action (mapper) goto move.drawbridge when %move_DRAWBRIDGE
 	action (mapper) goto move.knock when The gate is closed.  Try KNOCKing instead
 	action (mapper) goto move.rope.bridge when %move_ROPE.BRIDGE
+     action (mapper) goto move.fatigue when %move_FATIGUE
      action (mapper) goto move.climb.mount.fail when %climb_mount_FAIL
 	return
 
@@ -229,22 +235,20 @@ ice.return:
 	var slow_on_ice 0
 	action (mapper) on
 	return
-
 move.knock:
-matchre move.done %move_OK|All right, welcome back|opens the door just enough to let you slip through
-matchre turn.cloak I can't see your face at all
-matchre stop.invis The gate guard can't see you
-matchre gate.wanted wanted criminal
-put knock gate
-matchwait
+     matchre move.done %move_OK|All right, welcome back|opens the door just enough to let you slip through|wanted criminal
+     matchre turn.cloak I can't see your face
+     matchre stop.invis The gate guard can't see you
+     put knock gate
+     matchwait
 stop.invis:
-put hum scale
-pause 0.5
-goto move.knock
+     put hum scale
+     pause 0.5
+     goto move.knock
 turn.cloak:
-put turn my cloak
-pause .5
-goto move.knock
+     put turn my cloak
+     pause .5
+     goto move.knock
 move.drag:
 move.sneak:
 move.swim:
@@ -315,10 +319,10 @@ move.climb.with.app.and.rope:
 	put appraise %climbobject quick
 	waitforre ^Roundtime:|^You cannot appraise that when you are in combat
 	if ("$guild" = "Thief") then 
-		{
-			send khri flight focus
-			pause
-		}
+	{
+		send khri flight focus
+		pause
+	}
 	matchre stow.rope %move_OK
 	matchre move.climb.with.app.and.rope %climb_FAIL
 	put %movement with my rope
@@ -326,15 +330,15 @@ move.climb.with.app.and.rope:
 stow.rope:
 	if contains("$righthand $lefthand", "braided heavy rope") then
 	{
-		put coil my braided rope
-		put stow my braided rope
+		send coil my braided rope
+		send stow my braided rope
 		wait
 		pause 0.5
 	}
 	if contains("$righthand $lefthand", "heavy rope") then
 	{
-		put coil my heavy rope
-		put stow my heavy rope
+		send coil my heavy rope
+		send stow my heavy rope
 		wait
 		pause 0.5
 	}
@@ -371,6 +375,52 @@ move.pause:
 	put %movement
 	pause
 	goto move.done
+move.fatigue:
+     echo *** YOU ARE TOO FATIGUED TO CLIMB! ***
+fatigue.check:
+     if ("$guild" = "Barbarian") then 
+	{
+		send berserk avalanche
+		pause 2
+	}
+     if ("$guild" = "Bard") then 
+	{
+		send prep hodi 20
+		pause 14
+          put -cast;-2 gesture
+          pause
+	}
+     if ("$guild" = "Empath") then 
+	{
+		send prep refresh 20
+		pause 14
+          put -cast;-2 gesture
+          pause
+	}
+     if ("$guild" = "Warrior") then 
+	{
+		send prep zephyr 20
+		pause 14
+          put -cast;-2 gesture
+          pause
+	}
+     if ("$guild" = "Cleric") then 
+	{
+		send prep EF 20
+		pause 14
+          put -cast;-2 gesture
+          pause
+	}
+fatigue.wait:
+     if $stamina > 55 then 
+     {
+          put %movement
+          pause
+          goto move.done
+     }
+     echo *** Pausing to recover stamina
+     pause 10
+     goto fatigue.wait
 move.stairs:
 move.wait:
 	pause 0.2
@@ -443,10 +493,10 @@ move.retry:
 	echo
 	pause 0.5
 	if $stunned = 1 then
-		{
+	{
 		pause
 		goto move.retry
-		}
+	}
 	goto return.clear
 move.closed:
 	echo
@@ -454,7 +504,7 @@ move.closed:
 	echo SHOP IS CLOSED FOR THE NIGHT!
 	echo ********************************
 	echo
-	put #parse SHOP CLOSED
+	put #parse SHOP IS CLOSED
 	exit
 move.failed:
     evalmath failcounter %failcounter + 1
