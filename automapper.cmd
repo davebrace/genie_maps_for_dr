@@ -62,7 +62,7 @@ action var slow_on_ice 1 when ^At the speed you are traveling, you are going to 
 		}
 
 var failcounter 0
-var typeahead 0
+var typeahead 1
 if def(automapper.typeahead) then var typeahead $automapper.typeahead
 
 var depth 0
@@ -142,7 +142,7 @@ done:
 pause .1
 	pause 0.5
 	put #parse YOU HAVE ARRIVED
-	put #class arrive on
+	put #class arrive off
 	exit
 
 move:
