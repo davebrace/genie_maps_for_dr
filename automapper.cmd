@@ -5,7 +5,7 @@ put #class combat off
 put #class joust off
 
 # automapper.cmd version 5.2
-# last changed: Feb 11th, 2016
+# last changed: April 12th, 2016
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -30,6 +30,7 @@ put #class joust off
 # Shroom - Added catch for Shard citizens now being able to enter closed shops at night
 # Shroom - Added catch for running out of stamina when climbing stairs (Aesry)
 # - Will cast guild-specific fatigue recovery buffs if possible and pause to wait for stamina before continuing
+# Shroom - Added additional catches for climbing fail and needing to stand
 
 # Related macros
 # ---------------
@@ -62,7 +63,7 @@ action var slow_on_ice 1 when ^At the speed you are traveling, you are going to 
 		}
 
 var failcounter 0
-var typeahead 1
+var typeahead 0
 if def(automapper.typeahead) then var typeahead $automapper.typeahead
 
 var depth 0
@@ -77,11 +78,11 @@ var move_RETREAT ^You are engaged to|^You try to move, but you're engaged|^While
 var move_WEB ^You can't do that while entangled in a web
 var move_WAIT ^You continue climbing|^You begin climbing|^You really should concentrate on your journey|^You step onto a massive stairway
 var move_END_DELAY ^You reach|you reach\.\.\.$
-var move_STAND ^You must be standing to do that|^You can't do that while (lying down|kneeling|sitting)|you trip over an exposed root|^Stand up first\.|^You must stand first\.|a particularly sturdy one finally brings you to your knees\.$|You try to roll through the fall but end up on your back\.$
+var move_STAND ^You must be standing to do that|^You can't do that while (lying down|kneeling|sitting)|you trip over an exposed root|^Stand up first\.|^You must stand first\.|^You'll need to stand up|a particularly sturdy one finally brings you to your knees\.$|You try to roll through the fall but end up on your back\.$
 var move_NO_SNEAK ^You can't do that here|^In which direction are you trying to sneak|^Sneaking is an inherently stealthy|^You can't sneak that way|^You can't sneak in that direction
 var move_GO ^Please rephrase that command
 var move_MUCK ^You fall into the .+ with a loud \*SPLUT\*|^You slip in .+ and fall flat on your back\!|^The .+ holds you tightly, preventing you from making much headway\.|^You make no progress in the mud|^You struggle forward, managing a few steps before ultimately falling short of your goal\.
-var climb_FAIL ^Trying to judge the climb, you peer over the edge\.  A wave of dizziness hits you, and you back away from .+\.|^You start down .+, but you find it hard going\.  Rather than risking a fall, you make your way back up\.|^You attempt to climb down .+, but you can't seem to find purchase\.|^You pick your way up .+, but reach a point where your footing is questionable\.  Reluctantly, you climb back down\.|^You make your way up .+\.  Partway up, you make the mistake of looking down\.  Struck by vertigo, you cling to .+ for a few moments, then slowly climb back down\.|^You approach .+, but the steepness is intimidating\.|^You start up .+, but slip after a few feet and fall to the ground\!  You are unharmed but feel foolish\.
+var climb_FAIL ^Trying to judge the climb, you peer over the edge\.  A wave of dizziness hits you, and you back away from .+\.|^You start down .+, but you find it hard going\.  Rather than risking a fall, you make your way back up\.|^You attempt to climb down .+, but you can't seem to find purchase\.|^You pick your way up .+, but reach a point where your footing is questionable\.  Reluctantly, you climb back down\.|^You make your way up .+\.  Partway up, you make the mistake of looking down\.  Struck by vertigo, you cling to .+ for a few moments, then slowly climb back down\.|^You approach .+, but the steepness is intimidating\.|^The ground approaches you at an alarming rate|^You start up .+, but slip after a few feet and fall to the ground\!  You are unharmed but feel foolish\.
 var move_CLOSED ^The door is locked up tightly for the night|^You stop as you realize that the|shop is closed for the night|I'm sorry, but you need to be a citizen|BONK\! You smash your nose|must be closed for the night
 var swim_FAIL ^You struggle|^You work|^You slap|^You flounder
 var move_DRAWBRIDGE ^The guard yells, "Lower the bridge|^The guard says, "You'll have to wait|^A guard yells, "Hey|^The guard yells, "Hey
@@ -142,7 +143,7 @@ done:
 pause .1
 	pause 0.5
 	put #parse YOU HAVE ARRIVED
-	put #class arrive off
+	put #class arrive on
 	exit
 
 move:
