@@ -4,8 +4,8 @@ put #class arrive off
 put #class combat off
 put #class joust off
 
-# automapper.cmd version 5.2
-# last changed: April 12th, 2016
+# automapper.cmd version 5.3
+# last changed: July 3rd, 2016
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -110,7 +110,7 @@ actions:
 	action (mapper) echo Will re-attempt climb in 5 seconds...;send 5 $lastcommand when ^All this climbing back and forth is getting a bit tiresome\.  You need to rest a bit before you continue\.$
 	action (mapper) goto move.retry when %swim_FAIL
 	action (mapper) goto move.drawbridge when %move_DRAWBRIDGE
-	action (mapper) goto move.knock when The gate is closed.  Try KNOCKing instead
+	action (mapper) goto move.knock when The gate is closed\.  Try KNOCKing instead
 	action (mapper) goto move.rope.bridge when %move_ROPE.BRIDGE
      action (mapper) goto move.fatigue when %move_FATIGUE
      action (mapper) goto move.climb.mount.fail when %climb_mount_FAIL
