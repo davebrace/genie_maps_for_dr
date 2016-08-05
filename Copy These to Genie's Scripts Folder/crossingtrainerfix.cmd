@@ -27,8 +27,8 @@ Trainer:
 	exit
 	
 Strength:
-	action var trainer 0 when Tembeg's Armory, Salesroom|Town Green Northwest
-	action var trainer 1 when Tembeg's Armory, Workroom
+	action var trainer 0 when Tembeg's Armory, Workroom|Town Green Northwest
+	action var trainer 1 when Tembeg's Armory, Salesroom
 	
 	send %0
 	waitforre Tembeg's Armory, Workroom|Tembeg's Armory, Salesroom|Town Green Northwest
