@@ -5,7 +5,7 @@ put #class combat off
 put #class joust off
 
 # automapper.cmd version 5.3
-# last changed: July 3rd, 2016
+# last changed: August 29th, 2016
 
 # Added handler for attempting to enter closed shops from Shroomism
 # Added web retry support from Dasffion
@@ -31,6 +31,7 @@ put #class joust off
 # Shroom - Added catch for running out of stamina when climbing stairs (Aesry)
 # - Will cast guild-specific fatigue recovery buffs if possible and pause to wait for stamina before continuing
 # Shroom - Added additional catches for climbing fail and needing to stand
+# Shroom - Added further support and logic for ropes
 
 # Related macros
 # ---------------
@@ -287,21 +288,21 @@ move.climb.mount.fail:
 move.climb.with.rope:
 	if !contains("$righthand $lefthand", "braided heavy rope") then
 	{
-		pause
+		pause 0.1
+          pause 0.1
 		action (mapper) off
-		put get my braided rope
-		put uncoil my braided rope
-		wait
+		send get my braided rope
+		send uncoil my braided rope
 		pause 0.5
 		action (mapper) on
 	}
 	if !contains("$righthand $lefthand", "heavy rope") then
 	{
-		pause
+		pause 0.1
+          pause 0.1
 		action (mapper) off
-		put get my heavy rope
-		put uncoil my heavy rope
-		wait
+		send get my heavy rope
+		send uncoil my heavy rope
 		pause 0.5
 		action (mapper) on
 	}
@@ -309,6 +310,7 @@ move.climb.with.rope:
 		{
 			send khri flight focus
 			pause 3
+               pause 0.5
 		}
 	if !contains("$righthand $lefthand", "heavy rope") then goto move.climb.with.app.and.rope
 	matchre stow.rope %move_OK
