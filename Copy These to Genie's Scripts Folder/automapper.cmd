@@ -141,7 +141,7 @@ wave_do:
 	return
 
 done:
-pause .1
+pause 0.1
 	pause 0.5
 	put #parse YOU HAVE ARRIVED
 	put #class arrive on
@@ -286,33 +286,34 @@ move.climb.mount.fail:
 	put %movement
 	matchwait
 move.climb.with.rope:
+     action (mapper) off
 	if !contains("$righthand $lefthand", "braided heavy rope") then
 	{
-		pause 0.1
+          pause 0.001
           pause 0.1
-		action (mapper) off
 		send get my braided rope
 		send uncoil my braided rope
 		pause 0.5
-		action (mapper) on
+          pause 0.1
 	}
 	if !contains("$righthand $lefthand", "heavy rope") then
 	{
-		pause 0.1
+		pause 0.001
           pause 0.1
-		action (mapper) off
 		send get my heavy rope
 		send uncoil my heavy rope
 		pause 0.5
-		action (mapper) on
+          pause 0.1
 	}
-	if ("$guild" = "Thief") then 
+     action (mapper) on
+	if ("$guild" = "Thief") && ($concentration > 50) then
 		{
 			send khri flight focus
-			pause 3
+			pause 2
                pause 0.5
 		}
-	if !contains("$righthand $lefthand", "heavy rope") then goto move.climb.with.app.and.rope
+     pause 0.001
+	if contains("$righthand $lefthand", "heavy rope") then goto move.climb.with.app.and.rope
 	matchre stow.rope %move_OK
 	matchre move.climb.with.app.and.rope %climb_FAIL
 	put %movement with my rope
@@ -321,10 +322,12 @@ move.climb.with.app.and.rope:
 	eval climbobject replacere("%movement", "climb ", "")
 	put appraise %climbobject quick
 	waitforre ^Roundtime:|^You cannot appraise that when you are in combat
-	if ("$guild" = "Thief") then 
+	if ("$guild" = "Thief") && ($concentration > 50) then 
 	{
+          pause 0.001
 		send khri flight focus
-		pause
+		pause 2
+          pause 0.5
 	}
 	matchre stow.rope %move_OK
 	matchre move.climb.with.app.and.rope %climb_FAIL
@@ -333,16 +336,18 @@ move.climb.with.app.and.rope:
 stow.rope:
 	if contains("$righthand $lefthand", "braided heavy rope") then
 	{
+          pause 0.1
 		send coil my braided rope
 		send stow my braided rope
-		wait
+		pause 0.5
 		pause 0.5
 	}
 	if contains("$righthand $lefthand", "heavy rope") then
 	{
+          pause 0.1
 		send coil my heavy rope
 		send stow my heavy rope
-		wait
+		pause 0.5
 		pause 0.5
 	}
 	goto move.done
