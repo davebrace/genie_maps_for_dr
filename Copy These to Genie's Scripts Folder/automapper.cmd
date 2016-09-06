@@ -144,7 +144,7 @@ done:
 pause 0.1
 	pause 0.5
 	put #parse YOU HAVE ARRIVED
-	put #class arrive on
+	put #class arrive off
 	exit
 
 move:
